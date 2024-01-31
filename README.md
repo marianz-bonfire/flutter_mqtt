@@ -1,6 +1,6 @@
 # flutter_mqtt
 
-A new Flutter project.
+Simple example flutter project that uses MQTT package
 
 ## Getting Started
 
