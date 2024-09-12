@@ -2,6 +2,25 @@
 
 Simple example flutter project that uses MQTT package
 
+
+## Screenshots
+
+|        Disconnected Screen         |          Connecting Screen           |   Connected Screen         |   Messages Screen         |
+| :------------------------: | :--------------------------------: | :--------------------------: | :--------------------------: |
+| ![Disconnected Screen][disconnected-image] | ![Connecting Screen][connecting-image] | ![Connected Screen][connected-image] | ![Messages Screen][messages-image] |
+
+<!-- Variables -->
+
+[disconnected-image]: https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/Screenshot_20240912_102852.png
+[connecting-image]: https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/Screenshot_20240912_102926.png
+[connected-image]: https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/Screenshot_20240912_102950.png
+[messages-image]: https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/Screenshot_20240912_105424.png
+[demo-image]: https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/demo.mp4
+
+## Videos
+
+[![Watch the video](https://th.bing.com/th/id/OIP.7pTy4WEaQXMcoNxibRhFQwHaFV?rs=1&pid=ImgDetMain)](https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/demo.mp4)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
