@@ -19,7 +19,7 @@ Simple example flutter project that uses MQTT package
 
 ## Videos
 
-[![Watch the video](https://th.bing.com/th/id/OIP.7pTy4WEaQXMcoNxibRhFQwHaFV?rs=1&pid=ImgDetMain)](https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/demo.mp4)
+[![Watch the video](https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/demo.png)](https://github.com/marianz-bonfire/flutter_mqtt/blob/master/assets/demo.mp4)
 
 ## Getting Started
 
