@@ -6,7 +6,7 @@ class MqttState extends ChangeNotifier {
   MqttAppConnectionState _appConnectionState =
       MqttAppConnectionState.disconnected;
 
-  MqttAppConnectionState get appConnectionState => _appConnectionState;
+  MqttAppConnectionState get currentState => _appConnectionState;
 
   void setAppConnectionState(MqttAppConnectionState stateStatus) {
     _appConnectionState = stateStatus;

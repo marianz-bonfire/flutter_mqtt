@@ -1,19 +1,22 @@
+import 'package:flutter_mqtt/mqtt_service/mqtt_state.dart';
+import 'package:flutter_mqtt/mqtt_service/mqtt_subscribe_state.dart';
+import 'package:flutter_mqtt/utils/logger.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-
-import 'mqtt_state.dart';
 
 class MqttManager {
   final String identifier;
   final String host;
   final String topic;
   final MqttState mqttAppConnectionState;
+  final MqttSubscribeState? mqttSubscribeState;
 
   MqttManager({
     required this.identifier,
     required this.host,
     required this.topic,
     required this.mqttAppConnectionState,
+    this.mqttSubscribeState,
   });
 
   MqttServerClient? client;
@@ -37,7 +40,7 @@ class MqttManager {
       ..withWillQos(MqttQos.atMostOnce)
       ..startClean();
 
-    print('mosquitto client connecting...');
+    Logger.info('mosquitto client connecting...');
 
     client!.connectionMessage = connMessage;
   }
@@ -53,7 +56,7 @@ class MqttManager {
   }
 
   void disconnect() {
-    print('disconnect');
+    Logger.info('disconnect');
     client!.disconnect();
     mqttAppConnectionState.setAppConnectionState(MqttAppConnectionState.disconnected);
   }
@@ -64,51 +67,56 @@ class MqttManager {
     try {
       client!.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
     } catch (e) {
-      print(e);
+      Logger.error('PUBLISH ERROR: ${e.toString()}');
     }
   }
 
   void subscribe(String topic) {
-    client!.subscribe(topic,  MqttQos.atMostOnce);
+    mqttSubscribeState?.setSubscribeState(SubscribeState.subscribing);
+    client!.subscribe(topic, MqttQos.atMostOnce);
   }
 
   void onSubscribed(String topic) {
-    print('you subscribe this topic $topic');
+    mqttSubscribeState?.setSubscribeState(SubscribeState.subscribed);
+    Logger.info('you subscribe this topic $topic');
   }
 
   void onDisconnected() {
-    print('you disconnect');
+    Logger.info('onDisconnected');
     if (client!.connectionStatus!.returnCode == MqttConnectReturnCode.noneSpecified) {
-      print('onDisconnected callback is solicited, this is correct');
+      Logger.info('onDisconnected callback is solicited, this is correct');
     }
     mqttAppConnectionState.setAppConnectionState(MqttAppConnectionState.disconnected);
+    mqttSubscribeState?.setSubscribeState(SubscribeState.unsubscribed);
   }
 
   void onConnected() {
     mqttAppConnectionState.setAppConnectionState(MqttAppConnectionState.connected);
-    print('mosquitto client connected...');
+    Logger.info('mosquitto client connected...');
     client!.subscribe(topic, MqttQos.atMostOnce);
     client!.updates!.listen((event) {
       final MqttPublishMessage recMessage = event.first.payload as MqttPublishMessage;
 
       final String pt = MqttPublishPayload.bytesToStringAsString(recMessage.payload.message);
 
-      print('Change notification:: topic is <${event.first.topic}>, payload is <-- $pt -->');
+      Logger.info('Change notification:: topic is <${event.first.topic}>, payload is <-- $pt -->');
     });
   }
 
   // subscribe to topic failed
   void onSubscribeFail(String topic) {
-    print('Failed to subscribe $topic');
+    Logger.info('Failed to subscribe $topic');
+    mqttSubscribeState?.setSubscribeState(SubscribeState.failed);
   }
 
   // unsubscribe succeeded
   void onUnsubscribed(String? topic) {
-    print('Unsubscribed topic: $topic');
+    Logger.info('Unsubscribed topic: $topic');
+    mqttSubscribeState?.setSubscribeState(SubscribeState.unsubscribed);
   }
 
   // PING response received
   void pong() {
-    print('Ping response client callback invoked');
+    Logger.info('Ping response client callback invoked');
   }
 }

@@ -22,9 +22,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home: ChangeNotifierProvider<MqttState>(
-          create: (_) => MqttState(),
-          child: MyHomePage(title: 'Flutter Demo Home Page')),
+        create: (_) => MqttState(),
+        child: const MyHomePage(title: 'Flutter MQTT Demo'),
+      ),
     );
   }
 }
@@ -59,9 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
     manager!.initMqttClient();
     manager!.connect();
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   void disconnect() {
@@ -72,6 +72,34 @@ class _MyHomePageState extends State<MyHomePage> {
   void subscribe() {
     manager!.subscribe('jay#');
     setState(() {});
+  }
+
+  Widget connectionStatus(MqttState appState) {
+    String status = '-';
+    Color statusColor = Colors.white;
+    if (appState.currentState == MqttAppConnectionState.connected) {
+      status = 'CONNECTED';
+      statusColor = Colors.green;
+    } else if (appState.currentState == MqttAppConnectionState.connecting) {
+      status = 'CONNECTING...';
+      statusColor = Colors.blue;
+    } else if (appState.currentState == MqttAppConnectionState.disconnected) {
+      status = 'DISCONNECTED';
+      statusColor = Colors.red;
+    } else {
+      status = '-';
+    }
+    return Container(
+      width: double.infinity,
+      color: statusColor,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          status,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 
   @override
@@ -86,30 +114,27 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ElevatedButton(
-              onPressed: appState.appConnectionState ==
-                  MqttAppConnectionState.connected
+              onPressed: appState.currentState == MqttAppConnectionState.connected
                   ? null
                   : () {
-                connect(appState);
-              },
+                      connect(appState);
+                    },
               child: const Text('Connect'),
             ),
             ElevatedButton(
-              onPressed: appState.appConnectionState ==
-                  MqttAppConnectionState.disconnected
+              onPressed: appState.currentState == MqttAppConnectionState.disconnected
                   ? null
                   : () {
-                disconnect();
-              },
+                      disconnect();
+                    },
               child: const Text('Disconnect'),
             ),
             ElevatedButton(
-              onPressed: appState.appConnectionState ==
-                  MqttAppConnectionState.disconnected
+              onPressed: appState.currentState == MqttAppConnectionState.disconnected
                   ? null
                   : () {
-                subscribe();
-              },
+                      subscribe();
+                    },
               child: const Text('Subscribe'),
             ),
           ],
@@ -119,46 +144,40 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(appState.appConnectionState == MqttAppConnectionState.connected
-                ? 'connected'
-                : appState.appConnectionState ==
-                MqttAppConnectionState.connecting
-                ? 'connecting'
-                : appState.appConnectionState ==
-                MqttAppConnectionState.disconnected
-                ? 'disconnected'
-                : '-'),
+            connectionStatus(appState),
             manager == null
                 ? const Expanded(child: SizedBox())
                 : Expanded(
-              child:
-              StreamBuilder<List<MqttReceivedMessage<MqttMessage>>>(
-                stream: manager!.client!.updates,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final MqttPublishMessage recMessage = snapshot
-                        .data!.first.payload as MqttPublishMessage;
-                    final String pt =
-                    MqttPublishPayload.bytesToStringAsString(
-                        recMessage.payload.message);
+                    child: StreamBuilder<List<MqttReceivedMessage<MqttMessage>>>(
+                      stream: manager!.client!.updates,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final MqttPublishMessage recMessage = snapshot.data!.first.payload as MqttPublishMessage;
+                          final String pt = MqttPublishPayload.bytesToStringAsString(recMessage.payload.message);
 
-                    chats.add(pt);
-                    chats.reversed;
+                          chats.add(pt);
+                          chats.reversed;
 
-                    return ListView.builder(
-                      itemCount: chats.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(chats[index].toString()),
-                        );
+                          return ListView.builder(
+                            itemCount: chats.length,
+                            itemBuilder: (context, index) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(chats[index].toString()),
+                                  ),
+                                  Divider(),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                        return const SizedBox();
                       },
-                    );
-                  }
-                  return const SizedBox();
-                },
-              ),
-            ),
+                    ),
+                  ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
